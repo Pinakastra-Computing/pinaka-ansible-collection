@@ -1,0 +1,49 @@
+---
+- name: Install CA certificates and gnupg packages
+  package:
+    name:
+      - ca-certificates
+      - gnupg
+    cache_valid_time: "{{ apt_cache_valid_time if ansible_facts.os_family == 'Debian' else omit }}"
+    update_cache: "{{ True if ansible_facts.os_family == 'Debian' else omit }}"
+    state: present
+  become: True
+
+- name: Ensure apt sources list directory exists
+  file:
+    path: /etc/apt/sources.list.d
+    state: directory
+    recurse: yes
+  become: True
+
+- name: Ensure apt keyrings directory exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    recurse: yes
+  become: True
+
+- name: Install docker apt gpg key
+  get_url:
+    url: "{{ docker_apt_url }}/{{ docker_apt_key_file }}"
+    dest: "/etc/apt/keyrings/docker.asc"
+    mode: "0644"
+    force: true
+  become: True
+
+- name: Install docker apt pin
+  copy:
+    dest: "/etc/apt/preferences.d/docker"
+    content: |
+        Package: {{ docker_apt_package }}
+        Pin: version {{ docker_apt_package_pin }}
+        Pin-Priority: 1000
+    mode: 0644
+  become: True
+  when: docker_apt_package_pin | length > 0
+
+- name: Enable docker apt repository
+  apt_repository:
+    repo: "{{ docker_apt_repo }}"
+    filename: docker
+  become: True
