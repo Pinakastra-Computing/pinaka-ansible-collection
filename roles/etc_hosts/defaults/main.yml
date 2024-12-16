@@ -1,3 +1,0 @@
----
-# Whether to add entries to /etc/hosts.
-customize_etc_hosts: true

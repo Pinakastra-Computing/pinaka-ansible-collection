@@ -1,4 +1,0 @@
----
-upgrade:
-  - |
-    Removes the deprecated ``docker_custom_option`` variable.
